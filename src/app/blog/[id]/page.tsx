@@ -10,7 +10,11 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function BlogPost({ params }: { params: { id: string } }) {
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function BlogPost({ params }: PageProps) {
   const { id } = await params;
   const post = await getBlogPostById(parseInt(id));
 
