@@ -4,128 +4,114 @@
 
 Next.js 15 で Static Generation (SG)と Client-Side Rendering (CSR)を組み合わせたサンプルを作成します。静的生成による高速なページロードと、クライアントサイドでのインタラクティブな機能を両立させます。
 
-## ゴール
+## 実装結果
 
-1. 静的生成（SG）とクライアントサイドレンダリング（CSR）の最適な組み合わせ方を示す
-2. Next.js 15 の機能を活用した実装例の提供
-3. CSS モジュールを使用した適切なスタイリング
+### 1. 静的エクスポートの設定
 
-## 実装計画
+`next.config.ts`で静的エクスポートを有効化：
 
-### 1. プロジェクト構造のセットアップ
+```typescript
+import type { NextConfig } from 'next';
 
-```
-src/
-├── app/
-│   ├── blog/
-│   │   └── [id]/
-│   │       ├── page.module.css
-│   │       └── page.tsx
-│   ├── dashboard/
-│   │   ├── page.module.css
-│   │   └── page.tsx
-│   ├── layout.tsx
-│   ├── page.module.css  # 既存
-│   └── page.tsx        # 既存
-├── components/
-│   ├── ClientCounter.module.css
-│   ├── ClientCounter.tsx
-│   ├── StaticBlogList.module.css
-│   └── StaticBlogList.tsx
-└── lib/
-    └── api.ts
+const config: NextConfig = {
+  output: 'export',
+};
+
+export default config;
 ```
 
-### 2. 実装ステップ
+### 2. ビルド結果
 
-1. **基本セットアップ**
+```
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      925 B         105 kB
+├ ○ /_not-found                            977 B         102 kB
+├ ● /blog/[id]                             316 B         104 kB
+├   ├ /blog/1
+├   ├ /blog/2
+├   └ /blog/3
+└ ○ /dashboard                             904 B         105 kB
+```
 
-   - [ ] `components`と`lib`ディレクトリの作成
-   - [ ] 必要なディレクトリ構造の作成
+### 3. 生成されたファイル構造
 
-2. **コア機能の実装**
+```
+out/
+├── _next/             # ビルドされたJSとアセット
+├── blog/              # 動的ルートから生成された静的ページ
+├── 404.html           # 404エラーページ
+├── dashboard.html     # ダッシュボードページ
+├── index.html        # トップページ
+└── [その他のアセット]
+```
 
-   - [ ] `lib/api.ts`の API 関数実装
-     - ブログ投稿の取得
-     - ダッシュボードデータの取得
-   - [ ] TypeScript 型の定義
+### 4. レンダリング方式の確認
 
-3. **コンポーネントの実装**
+1. **静的ページ（○ Static）**
 
-   - [ ] `ClientCounter.tsx`の実装
-     - カウンター機能
-     - 現在時刻の表示
-     - CSS モジュールでのスタイリング
-   - [ ] `StaticBlogList.tsx`の実装
-     - ブログ記事リストの表示
-     - CSS モジュールでのスタイリング
+   - トップページ（`/`）
+   - ダッシュボードページ（`/dashboard`）
+   - 404 ページ
 
-4. **ページの実装**
+2. **静的生成ページ（● SSG）**
 
-   - [ ] `app/page.tsx`の更新
-     - 静的部分とクライアント部分の組み合わせ
-   - [ ] `app/blog/[id]/page.tsx`の実装
-     - 動的ルートパラメータの処理
-     - 静的生成の設定
-   - [ ] `app/dashboard/page.tsx`の実装
-     - CSR コンポーネントの統合
-     - 静的データの取得と表示
+   - ブログ記事ページ（`/blog/[id]`）
+   - `generateStaticParams`により 3 つの記事ページを生成
 
-5. **スタイリング**
-   - [ ] 各コンポーネント用の CSS モジュール作成
-   - [ ] レスポンシブデザインの対応
-   - [ ] アクセシビリティの考慮
+3. **クライアントコンポーネント**
+   - カウンター機能
+   - 現在時刻の表示
 
-### 3. 技術的なポイント
+### 5. サイズと最適化
 
-1. **静的生成（SG）**
+- 共有 JS: 101 kB
+  - 主要チャンク: 53.2 kB
+  - その他の共有チャンク: 45.4 kB
+- 各ページのサイズ: 316B - 977B（HTML）
 
-   ```typescript
-   // 静的生成の強制
-   export const dynamic = 'force-static';
+## 技術的なポイント
 
-   // 動的ルートの静的パラメータ生成
-   export async function generateStaticParams() {
-     const ids = await getBlogIds();
-     return ids.map((id) => ({ id: id.toString() }));
-   }
-   ```
+1. **Next.js 15 の新機能活用**
 
-2. **クライアントサイドレンダリング（CSR）**
+   - 動的 API の非同期化対応
+   - 静的エクスポート（`output: 'export'`）
 
-   ```typescript
-   'use client'; // クライアントコンポーネントの明示
+2. **ハイブリッドレンダリング**
 
-   // クライアントサイドのステート管理
-   const [count, setCount] = useState(0);
-   ```
+   - ビルド時の静的生成
+   - クライアントサイドでのインタラクティブ機能
 
-3. **データフェッチ**
-   ```typescript
-   // 静的データフェッチ
-   async function getBlogPosts() {
-     return [
-       /* 静的データ */
-     ];
-   }
-   ```
+3. **パフォーマンス最適化**
+   - ページ単位の静的生成
+   - 適切なコード分割
 
-### 4. エラーハンドリング
+## デプロイメント
 
-1. ブログ記事が存在しない場合の処理
-2. データ取得失敗時のフォールバック UI
-3. クライアントサイドでのエラー表示
+生成された`out`ディレクトリは、以下のような静的ホスティングサービスにデプロイ可能：
 
-## 改善ポイント（実装後）
+- Vercel
+- Netlify
+- GitHub Pages
+- Amazon S3
+- その他の静的ホスティングサービス
 
-1. パフォーマンスの測定と最適化
-2. テストの追加
-3. アクセシビリティの改善
-4. SEO 対策の強化
+## 今後の改善ポイント
 
-## 依存関係
+1. **パフォーマンス最適化**
 
-- `next`: "15.0.0"
-- `react`: "^19"
-- `react-dom`: "^19"
-- TypeScript 関連パッケージ
+   - バンドルサイズのさらなる最適化
+   - 画像の最適化設定
+
+2. **機能拡張**
+
+   - より多くのインタラクティブ要素
+   - エラーハンドリングの強化
+
+3. **SEO 対策**
+
+   - メタデータの最適化
+   - OGP 対応
+
+4. **アクセシビリティ**
+   - WAI-ARIA 対応の強化
+   - キーボードナビゲーションの改善
