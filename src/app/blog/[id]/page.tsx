@@ -11,7 +11,8 @@ export async function generateStaticParams() {
 }
 
 export default async function BlogPost({ params }: { params: { id: string } }) {
-  const post = await getBlogPostById(parseInt(params.id));
+  const { id } = await params;
+  const post = await getBlogPostById(parseInt(id));
 
   if (!post) {
     return (
