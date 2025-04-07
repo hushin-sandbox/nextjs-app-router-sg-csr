@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './ClientCounter.module.css';
+import { Button, HStack, Stack, Text } from '@chakra-ui/react';
 
 export default function ClientCounter() {
   const [count, setCount] = useState(0);
@@ -20,28 +20,34 @@ export default function ClientCounter() {
   }, []);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.counterControls}>
-        <button
+    <Stack spacing={4}>
+      <HStack spacing={4}>
+        <Button
           onClick={() => setCount(count - 1)}
-          className={styles.button}
           aria-label="カウントを減らす"
+          size="md"
+          variant="outline"
         >
           -
-        </button>
-        <span className={styles.count}>{count}</span>
-        <button
+        </Button>
+        <Text fontSize="xl" fontWeight="medium" minW="2rem" textAlign="center">
+          {count}
+        </Text>
+        <Button
           onClick={() => setCount(count + 1)}
-          className={styles.button}
           aria-label="カウントを増やす"
+          size="md"
+          variant="outline"
         >
           +
-        </button>
-      </div>
-      <div className={styles.timeDisplay}>
+        </Button>
+      </HStack>
+      <Text fontSize="sm" color="gray.600">
         現在時刻（クライアントサイド）:{' '}
-        <span className={styles.monospace}>{currentTime}</span>
-      </div>
-    </div>
+        <Text as="span" fontFamily="mono">
+          {currentTime}
+        </Text>
+      </Text>
+    </Stack>
   );
 }
