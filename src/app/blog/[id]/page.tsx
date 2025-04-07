@@ -1,6 +1,7 @@
-import Link from 'next/link';
-import styles from './page.module.css';
+import NextLink from 'next/link';
+import { Box, Heading, Link, Stack, Text } from '@chakra-ui/react';
 import { getBlogIds, getBlogPostById } from '@/lib/api';
+import { Container } from '@/components/layouts/Container';
 
 // 静的生成のためのパスを定義
 export async function generateStaticParams() {
@@ -20,27 +21,49 @@ export default async function BlogPost({ params }: PageProps) {
 
   if (!post) {
     return (
-      <div className={styles.container}>
-        <Link href="/" className={styles.backLink}>
-          ← ホームに戻る
-        </Link>
-        <div className={styles.notFound}>記事が見つかりませんでした</div>
-      </div>
+      <Container>
+        <Stack spacing={4}>
+          <Link
+            as={NextLink}
+            href="/"
+            color="blue.500"
+            _hover={{ textDecoration: 'underline' }}
+          >
+            ← ホームに戻る
+          </Link>
+          <Text textAlign="center" color="gray.600" py={8}>
+            記事が見つかりませんでした
+          </Text>
+        </Stack>
+      </Container>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <Link href="/" className={styles.backLink}>
-        ← ホームに戻る
-      </Link>
+    <Container>
+      <Stack spacing={8}>
+        <Link
+          as={NextLink}
+          href="/"
+          color="blue.500"
+          _hover={{ textDecoration: 'underline' }}
+        >
+          ← ホームに戻る
+        </Link>
 
-      <article className={styles.article}>
-        <h1 className={styles.title}>{post.title}</h1>
-        <div className={styles.date}>投稿日: {post.date}</div>
-        <div className={styles.content}>{post.content}</div>
-      </article>
-    </div>
+        <Box as="article">
+          <Stack spacing={4}>
+            <Heading as="h1" size="2xl">
+              {post.title}
+            </Heading>
+            <Text color="gray.600">投稿日: {post.date}</Text>
+            <Text lineHeight="tall" mt={8}>
+              {post.content}
+            </Text>
+          </Stack>
+        </Box>
+      </Stack>
+    </Container>
   );
 }
 
